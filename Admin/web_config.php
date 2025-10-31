@@ -66,22 +66,27 @@ if($mod=='base'){
               </div>
               <div class="row show-grid">
               <div class="form-group col-xs-6">
-                <label for="Vaptcha_Open">系统人机验证开关</label>
+                <label for="Turnstile_Open">Cloudflare Turnstile（人机验证）开关</label>
                   <div class="clearfix">
                     <label class="lyear-radio radio-inline radio-primary">
-                      <input type="radio" name="Vaptcha_Open" value="0" <?=conf('Vaptcha_Open')==0?"checked":""?>><span>禁用</span>
+                      <input type="radio" name="Turnstile_Open" value="0" <?=conf('Turnstile_Open')==0?"checked":""?>><span>禁用</span>
                     </label>
                     <label class="lyear-radio radio-inline radio-primary">
-                      <input type="radio" name="Vaptcha_Open" value="1" <?=conf('Vaptcha_Open')==1?"checked":""?>><span>启用</span>
+                      <input type="radio" name="Turnstile_Open" value="1" <?=conf('Turnstile_Open')==1?"checked":""?>><span>启用</span>
                     </label>
                   </div>
-                <small class="help-block">调用方式：<code>conf('Vaptcha_Open')</code>则直接输出代码，<code>conf('Vaptcha_Opens');$Vaptcha_Opens;</code>输出1或0</small>
+                <small class="help-block">调用方式：<code>conf('Turnstile_Open')</code> 输出 1 或 0</small>
               </div>
               <div class="form-group col-xs-6">
-                <label for="Vaptcha_Vid">人机验证单元Vid</label>
-                <input class="form-control" type="text" id="Vaptcha_Vid" name="Vaptcha_Vid" value="<?php echo conf('Vaptcha_Vid');?>" placeholder="请输入人机验证单元Vid" >
-                <small class="help-block">前往<a href="https://www.vaptcha.com/">Vaptcha</a>免费注册开通</small>
+                <label for="Turnstile_SiteKey">Turnstile SiteKey</label>
+                <input class="form-control" type="text" id="Turnstile_SiteKey" name="Turnstile_SiteKey" value="<?php echo conf('Turnstile_SiteKey');?>" placeholder="请输入 Turnstile SiteKey" >
+                <small class="help-block">到 Cloudflare 注册 Turnstile 后可取得 SiteKey</small>
               </div>
+              </div>
+              <div class="form-group">
+                <label for="Turnstile_Secret">Turnstile Secret</label>
+                <input class="form-control" type="text" id="Turnstile_Secret" name="Turnstile_Secret" value="<?php echo conf('Turnstile_Secret');?>" placeholder="请输入 Turnstile Secret（保密）" >
+                <small class="help-block">用于服务器端向 Cloudflare 验证 token，务必保密</small>
               </div>
               <div class="form-group">
                 <button type="submit" class="btn btn-primary m-r-5">确 定</button>

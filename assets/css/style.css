@@ -807,6 +807,77 @@ section {
 }
 
 /*--------------------------------------------------------------
+# Latest News
+--------------------------------------------------------------*/
+.latest-news {
+  padding: 60px 0;
+  background-color: #f8f9fa;
+}
+
+.latest-news h3 {
+  font-size: 24px;
+  color: #425451;
+  margin-bottom: 30px;
+  font-weight: 600;
+}
+
+.latest-news .announcement-item,
+.latest-news .blog-item {
+  background: #fff;
+  padding: 20px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-in-out;
+}
+
+.latest-news .announcement-item:hover,
+.latest-news .blog-item:hover {
+  transform: translateY(-5px);
+}
+
+.latest-news .announcement-item h4,
+.latest-news .blog-item h4 {
+  font-size: 18px;
+  margin: 0 0 10px 0;
+}
+
+.latest-news .announcement-item h4 a,
+.latest-news .blog-item h4 a {
+  color: #425451;
+  transition: 0.3s;
+}
+
+.latest-news .announcement-item h4 a:hover,
+.latest-news .blog-item h4 a:hover {
+  color: #1bbca3;
+}
+
+.latest-news .date,
+.latest-news .meta {
+  font-size: 14px;
+  color: #777;
+}
+
+.latest-news .meta i {
+  margin-right: 5px;
+  color: #1bbca3;
+}
+
+.latest-news .btn-read-more {
+  display: inline-block;
+  background: #1bbca3;
+  padding: 8px 30px;
+  color: #fff;
+  border-radius: 50px;
+  transition: 0.3s;
+}
+
+.latest-news .btn-read-more:hover {
+  background: #2ae0c4;
+}
+
+/*--------------------------------------------------------------
 # Info Box
 --------------------------------------------------------------*/
 .info-box .content {

@@ -32,18 +32,14 @@ if($my=='Query')
 <label for="qq">QQ号</label>
 <input type="text" class="form-control" name="qq" value="" placeholder="请输入您要查询的QQ号" />
 </div>
-<?php if(conf('Vaptcha_Open') == 1) {?>
-<div id="vaptchaContainer" class="form-group col-md-12">
-<div class="vaptcha-init-main">
-<div class="vaptcha-init-loading">
-<a href="/" target="_blank">
-<img src="https://r.vaptcha.com/public/img/vaptcha-loading.gif"/>
-</a>
-<span class="vaptcha-text">人机验证启动中...</span>
+<?php if(conf('Turnstile_Open')==1){ 
+    if(empty(conf('Turnstile_SiteKey')) || empty(conf('Turnstile_Secret'))){ ?>
+        <div class="alert alert-warning">管理員未正確配置 Turnstile，請先在後台配置</div>
+<?php } else { ?>
+<div class="form-group col-md-12">
+<div class="cf-turnstile" data-sitekey="<?php echo conf('Turnstile_SiteKey'); ?>" data-theme="light"></div>
 </div>
-</div>
-</div>
-<?php }?>
+<?php } } ?>
 <div class="form-group col-md-12">
 <input type="submit" class="btn btn-primary">
 </div>
@@ -74,18 +70,11 @@ elseif($my=='Join')
 <label for="describe">成员简介</label>
 <input type="text" class="form-control" name="TeamDescribe" value="" placeholder="请输入成员简介" />
 </div>
-<?php if(conf('Vaptcha_Open') == 1) {?>
-<div id="vaptchaContainer" class="form-group col-md-12">
-<div class="vaptcha-init-main">
-<div class="vaptcha-init-loading">
-<a href="/" target="_blank">
-<img src="https://r.vaptcha.com/public/img/vaptcha-loading.gif"/>
-</a>
-<span class="vaptcha-text">人机验证启动中...</span>
+<?php if(conf('Turnstile_Open')==1){ ?>
+<div class="form-group col-md-12">
+<div class="cf-turnstile" data-sitekey="<?php echo conf('Turnstile_SiteKey'); ?>" data-theme="light"></div>
 </div>
-</div>
-</div>
-<?php }?>
+<?php } ?>
 <div class="form-group col-md-12">
 <input type="submit" class="btn btn-primary">
 </div>
@@ -104,97 +93,92 @@ elseif($my=='Join')
 <script src="./assets/admin/js/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js"></script>
 <script type="text/javascript" src="./assets/admin/js/main.min.js"></script>
 <script src="./assets/layer/layer.js"></script>
-<?php if(conf('Vaptcha_Open') == 1) {?>
-<script src='https://v.vaptcha.com/v3.js'></script>
-<script>
-var obj;
-vaptcha({
-  vid: '<?php echo conf('Vaptcha_Vid')?>', 
-  type: 'click', 
-  scene: 0, 
-  container: '#vaptchaContainer', 
-  offline_server: '#', 
-  lang: 'zh-CN',
-  https: true,
-  color: '#5c8af7'
-}).then(function (vaptchaObj) {
-  obj = vaptchaObj;
-  vaptchaObj.render();
-  vaptchaObj.listen('close', function () {
-  })
-})
-</script>
+<?php if(conf('Turnstile_Open') == 1) {?>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <?php }?>
+
 <script>
 var vaptcha_open = 0;
-	function QueryTeam(){
-  		if($("#vaptchaContainer").length>0) vaptcha_open=1;
-	    var query = $("button[type='submit']");
-	  	var qq=$("input[name='qq']").val();
-    	var data = {qq:qq};
-		if(qq==''){layer.msg('请确保每项都不为空', {icon:2, time:1500});return false;}
-	  	if(vaptcha_open==1){
-		   	var token = obj.getToken();
-		    if(token == ""){
-		      	layer.msg('请先完成人机验证！'); return false;
-		    }
-		    var adddata = {token:token};
-	  	}
-	    query.attr('disabled', 'true');
-        layer.msg('正在查询中，请稍后...');
-		$.ajax({
-			type : 'POST',
-			url : 'Ajax.php?act=Query_submit',
-            data: Object.assign(data, adddata),
-			dataType : 'json',
-			success : function(data) {
-			  	if(data.code == 0){
-		        	query.removeAttr('disabled');
-			    	layer.msg(data.msg, {icon:1, time:1500});
-                	obj.reset();
-			  	}else{
-		        	query.removeAttr('disabled');
-			    	layer.msg(data.msg, {icon:2, time:1500});
-			    	obj.reset();
-			  	}
-			},
-		});
-    	return false;
-	}
-	function JoinTeam(){
-  		if($("#vaptchaContainer").length>0) vaptcha_open=1;
-	    var join = $("button[type='submit']");
-	  	var name=$("input[name='TeamName']").val();
-	  	var qq=$("input[name='TeamQq']").val();
-	  	var describe=$("input[name='TeamDescribe']").val();
-    	var data = {name:name,qq:qq,describe:describe};
-		if(name=='' || qq=='' || describe==''){ layer.msg('请确保每项都不为空', {icon:2, time:1500});}
-	  	if(vaptcha_open==1){
-		   	var token = obj.getToken();
-		    if(token == ""){
-		      	layer.msg('请先完成人机验证！'); return false;
-		    }
-		    var adddata = {token:token};
-	  	}
-	    join.attr('disabled', 'true');
-        layer.msg('正在提交中，请稍后...');
-		$.ajax({
-			type : 'POST',
-			url : 'Ajax.php?act=Join_submit',
-            data: {name:name,qq:qq,describe:describe,token:token},
-			dataType : 'json',
-			success : function(data) {
-			  if(data.code == 0){
-			    layer.msg(data.msg, {icon:1, time:1500}, function(){window.location.reload()});
-			  }else{
-			    layer.msg(data.msg, {icon:2, time:1500});
-		        join.removeAttr('disabled');
-                obj.reset();
-			  }
-			},
-		});
-	return false;
+function resetCaptcha() {
+    if(typeof turnstile !== 'undefined' && typeof vaptcha_open !== 'undefined' && vaptcha_open == 1) {
+    try{
+      turnstile.reset();
+    }catch(e){}
+  }
 }
+
+function QueryTeam(){
+  if($(".cf-turnstile").length>0) vaptcha_open=1;
+  var query = $("button[type='submit']");
+  var qq=$("input[name='qq']").val();
+  var data = {qq:qq};
+  if(qq==''){layer.msg('请确保每项都不为空', {icon:2, time:1500});return false;}
+  if(vaptcha_open==1){
+    var token = $("input[name='cf-turnstile-response']").val();
+      if(typeof token === 'undefined' || token == ""){
+      layer.msg('请先完成人机验证！', {icon:2}); return false;
+    }
+    var adddata = {token:token};
+  }
+  query.attr('disabled', 'true');
+  layer.msg('正在查询中，请稍后...');
+  $.ajax({
+    type : 'POST',
+    url : 'Ajax.php?act=Query_submit',
+    data: Object.assign(data, adddata),
+    dataType : 'json',
+    success : function(data) {
+      if(data.code == 0){
+        query.removeAttr('disabled');
+        layer.msg(data.msg, {icon:1, time:1500});
+        if(typeof turnstile !== 'undefined') try{turnstile.reset();}catch(e){}
+      }else{
+        query.removeAttr('disabled');
+        layer.msg(data.msg, {icon:2, time:1500});
+        if(typeof turnstile !== 'undefined') try{turnstile.reset();}catch(e){}
+      }
+    },
+  });
+  return false;
+}
+
+function JoinTeam(){
+  if($(".cf-turnstile").length>0) vaptcha_open=1;
+  var join = $("button[type='submit']");
+  var name=$("input[name='TeamName']").val();
+  var qq=$("input[name='TeamQq']").val();
+  var describe=$("input[name='TeamDescribe']").val();
+  var data = {name:name,qq:qq,describe:describe};
+  if(name=='' || qq=='' || describe==''){ layer.msg('请确保每项都不为空', {icon:2, time:1500});}
+  if(vaptcha_open==1){
+    var token = $("input[name='cf-turnstile-response']").val();
+    if(typeof token === 'undefined' || token == ""){
+      layer.msg('请先完成人机验证！'); return false;
+    }
+    var adddata = {token:token}; 
+  }
+  join.attr('disabled', 'true');
+  layer.msg('正在提交中，请稍后...');
+  $.ajax({
+    type : 'POST',
+    url : 'Ajax.php?act=Join_submit', 
+    data: Object.assign(data, adddata),
+    dataType : 'json',
+    success : function(data) {
+      if(data.code == 0){
+        layer.msg(data.msg, {icon:1, time:1500}, function(){window.location.reload()});
+      }else{
+        layer.msg(data.msg, {icon:2, time:1500});
+        join.removeAttr('disabled');
+        if(typeof turnstile !== 'undefined') try{turnstile.reset();}catch(e){}
+      }
+    },
+  });
+  return false;
+}
+</script>
+<script>
+
 </script>
 </body>
 </html>

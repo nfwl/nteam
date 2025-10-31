@@ -73,8 +73,6 @@ include('../Common/Core_brain.php');
                 <li> <a class="multitabs" href="project_approval.php">项目审批</a> </li>
                 <li> <a class="multitabs" href="system_log.php">系统日志</a> </li>
               </ul>
-	<li class="nav-item"> <a href="http://wpa.qq.com/msgrd?v=3&uin=2322796106&site=qq&menu=yes"><i class="mdi mdi-qqchat"></i>联系作者</a> </li>
-              	<li class="nav-item"> <a href="https://jq.qq.com/?_wv=1027&k=pijHv9ns"><i class="mdi mdi-comment-alert-outline"></i>加入群聊</a> </li>
             </li>
             <?php } ?>
           </ul>

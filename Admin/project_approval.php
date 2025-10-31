@@ -56,7 +56,7 @@ function listTable(query){
   var url = window.document.location.href.toString();
   var queryString = url.split("?")[1];
   query = query || queryString;
-  if(query == 'start' || query == undefined){
+  if(query == 'start' || typeof query === 'undefined'){
     query = '';
     history.replaceState({}, null, './project_approval.php');
   }else if(query != undefined){

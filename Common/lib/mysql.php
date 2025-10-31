@@ -21,3 +21,7 @@ $DB->exec("UPDATE `nteam_config_theme` SET `Index_Slide3` = '点击下方按钮<
 #系统数据库更新
 $DB->exec("ALTER TABLE `nteam_config` ADD `Vaptcha_Open` int(11) NULL COMMENT '系统人机验证开关' AFTER `Mail_Pwd`");
 $DB->exec("ALTER TABLE `nteam_config` ADD `Vaptcha_Vid` varchar(88) NULL COMMENT '验证码单元Vid' AFTER `Vaptcha_Open`");
+// Cloudflare Turnstile 配置字段（用于替换原有第三方人机验证）
+$DB->exec("ALTER TABLE `nteam_config` ADD `Turnstile_Open` int(11) NULL COMMENT 'Cloudflare Turnstile 开关' AFTER `Vaptcha_Vid`");
+$DB->exec("ALTER TABLE `nteam_config` ADD `Turnstile_SiteKey` varchar(255) NULL COMMENT 'Cloudflare Turnstile SiteKey' AFTER `Turnstile_Open`");
+$DB->exec("ALTER TABLE `nteam_config` ADD `Turnstile_Secret` varchar(255) NULL COMMENT 'Cloudflare Turnstile Secret' AFTER `Turnstile_SiteKey`");

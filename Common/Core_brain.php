@@ -1,5 +1,5 @@
 <?php
-error_reporting(E_ERROR | E_WARNING | E_PARSE);
+error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_WARNING);
 if(defined('IN_CRONLITE'))return;
 define('IN_CRONLITE', true);
 define('SYSTEM_ROOT', dirname(__FILE__).'/');
@@ -31,12 +31,25 @@ if($DB->query("select * from nteam_config where 1")==FALSE){header('Content-type
 include_once(SYSTEM_ROOT."Core_Functions.php");
 session_start();
 
+// 設置重要的 HTTP 安全標頭
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: SAMEORIGIN');
+header('X-XSS-Protection: 1; mode=block');
+header('Referrer-Policy: same-origin');
+header('Content-Security-Policy: default-src \'self\'; script-src \'self\' \'unsafe-inline\' \'unsafe-eval\' https:; style-src \'self\' \'unsafe-inline\' https:; img-src \'self\' data: https:; font-src \'self\' https:;');
+
 if($mod != 'install'){
     if(isset($_SESSION['adminUser'])){
-        $adminUser = $_SESSION['adminUser'];
+        $adminUser = \lib\Security::escapeHtml($_SESSION['adminUser']);
         $ip = $Gets->ip();
         $city = $Gets->get_city($ip);
-        $adminData = $DB->query("SELECT * FROM `nteam_admin` WHERE `adminUser` = '$adminUser'")->fetch();
+        
+        $stmt = \lib\Security::bindParams(
+            "SELECT * FROM `nteam_admin` WHERE `adminUser` = :adminUser",
+            ['adminUser' => $adminUser]
+        );
+        $stmt->execute();
+        $adminData = $stmt->fetch();
         if(!empty($adminData) && $adminData['adminLoginIp'] == $ip)$isLogin = true;
     }
     if(!isset($notLogin) && $mod == 'admin' && !$isLogin)header('Location:./login.php');

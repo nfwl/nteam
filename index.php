@@ -45,7 +45,7 @@ include("./Common/Core_brain.php");
             <p class="animate__animated animate__fadeInUp">
               <?php echo conf_index('Index_Slide1') ?>
             </p>
-            <a href="#about" class="btn-get-started animate__animated animate__fadeInUp scrollto">Get Started</a>
+            <a href="#about" class="btn-get-started animate__animated animate__fadeInUp scrollto">了解更多</a>
           </div>
         </div>
       </div>
@@ -56,11 +56,11 @@ include("./Common/Core_brain.php");
         </div>
         <div class="carousel-container">
           <div class="carousel-content">
-            <h2 class="animate__animated animate__fadeInDown">成员查询</h2>
+            <h2 class="animate__animated animate__fadeInDown">成員查詢</h2>
             <p class="animate__animated animate__fadeInUp">
               <?php echo conf_index('Index_Slide2') ?>
             </p>
-            <a href="javascript:;" id="Query" class="btn-get-started animate__animated animate__fadeInUp scrollto">Member Query</a>
+            <a href="javascript:;" id="Query" class="btn-get-started animate__animated animate__fadeInUp scrollto">成員查詢</a>
           </div>
         </div>
       </div>
@@ -71,11 +71,11 @@ include("./Common/Core_brain.php");
         </div>
         <div class="carousel-container">
           <div class="carousel-content">
-            <h2 class="animate__animated animate__fadeInDown">加入我们</h2>
+            <h2 class="animate__animated animate__fadeInDown">加入我們</h2>
             <p class="animate__animated animate__fadeInUp">
               <?php echo conf_index('Index_Slide3') ?>
             </p>
-            <a href="javascript:;" id="Join" class="btn-get-started animate__animated animate__fadeInUp scrollto">Apply to join</a>
+            <a href="javascript:;" id="Join" class="btn-get-started animate__animated animate__fadeInUp scrollto">申請加入</a>
           </div>
         </div>
       </div>
@@ -93,19 +93,48 @@ include("./Common/Core_brain.php");
 </section><!-- End Hero --><!-- ======= Header ======= --><header id="header">
 <div class="container d-flex">
   <div class="logo mr-auto">
-    <h1 class="text-light"><a href="index.php"><span><?php echo conf('Name') ?>
-    </span></a></h1>
+    <h1 class="text-light"><a href="index.php"><span><?php echo conf('Name') ?></span></a></h1>
     <!-- Uncomment below if you prefer to use an image logo -->
     <!-- <a href="index.php"><img src="assets/img/logo.png" alt="" class="img-fluid"></a>-->
   </div>
+
+  <nav class="nav-menu d-none d-lg-block">
+    <ul>
+      <li class="active"><a href="index.php">首頁</a></li>
+      <?php if(isset($_SESSION['userid'])) { ?>
+        <li class="drop-down">
+          <a href="javascript:void(0);">
+            <?php 
+              $user = $DB->getRow("SELECT * FROM nteam_users WHERE id=:id", [':id'=>$_SESSION['userid']]);
+              echo htmlspecialchars($user['username']);
+            ?>
+          </a>
+          <ul>
+            <li><a href="user/profile.php">個人資料</a></li>
+            <li><a href="user/settings.php">帳號設定</a></li>
+            <?php if($user['is_admin'] == 1) { ?>
+              <li><a href="Admin/">管理後台</a></li>
+            <?php } ?>
+            <li><a href="javascript:void(0);" onclick="logout()">登出</a></li>
+          </ul>
+        </li>
+      <?php } else { ?>
+        <li><a href="user/login.php">登入</a></li>
+        <li><a href="user/register.php">註冊</a></li>
+      <?php } ?>
+    </ul>
+  </nav>
   <nav class="nav-menu d-none d-lg-block">
   <ul>
-    <li class="active"><a href="#header">首页</a></li>
-    <li><a href="#about">关于</a></li>
-    <li><a href="#services">服务</a></li>
-    <li><a href="#portfolio">项目</a></li>
-    <li><a href="#team">成员</a></li>
-    <li><a href="#contact">联系</a></li>
+    <li class="active"><a href="#header">首頁</a></li>
+    <li><a href="#about">關於</a></li>
+    <li><a href="#services">服務</a></li>
+    <li><a href="#latest-news">最新動態</a></li>
+    <li><a href="announcements.php">公告</a></li>
+    <li><a href="blogs.php">博客</a></li>
+    <li><a href="#portfolio">項目</a></li>
+    <li><a href="#team">成員</a></li>
+    <li><a href="#contact">聯繫</a></li>
   </ul>
   </nav><!-- .nav-menu -->
 </div>
@@ -184,7 +213,62 @@ include("./Common/Core_brain.php");
     <script src="https://v1.hitokoto.cn/?encode=js&amp;select=%23hitokoto" defer=""></script>
   </div>
 </div>
-</section><!-- End Cta Section --><!-- ======= Our Portfolio Section ======= --><section id="portfolio" class="portfolio section-bg">
+</section><!-- End Cta Section -->
+
+<!-- ======= Latest News Section ======= -->
+<section id="latest-news" class="latest-news section-bg">
+  <div class="container">
+    <div class="section-title">
+      <h2>最新動態</h2>
+    </div>
+    
+    <div class="row">
+      <!-- 公告部分 -->
+      <div class="col-lg-6">
+        <h3>最新公告</h3>
+        <div class="announcements-list">
+          <?php
+          $announcements = $DB->query("SELECT * FROM nteam_announcement WHERE status=1 ORDER BY id DESC LIMIT 5");
+          while($announcement = $announcements->fetch()){
+          ?>
+            <div class="announcement-item">
+              <h4><a href="announcement.php?id=<?php echo $announcement['id'];?>"><?php echo $announcement['title'];?></a></h4>
+              <p class="date"><i class="bx bx-calendar"></i> <?php echo date('Y-m-d', strtotime($announcement['addtime']));?></p>
+            </div>
+          <?php } ?>
+          <div class="text-center mt-4">
+            <a href="announcements.php" class="btn-read-more">查看更多公告</a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 博客部分 -->
+      <div class="col-lg-6">
+        <h3>最新文章</h3>
+        <div class="blogs-list">
+          <?php
+          $blogs = $DB->query("SELECT * FROM nteam_blog WHERE status=1 ORDER BY id DESC LIMIT 5");
+          while($blog = $blogs->fetch()){
+          ?>
+            <div class="blog-item">
+              <h4><a href="blog.php?id=<?php echo $blog['id'];?>"><?php echo $blog['title'];?></a></h4>
+              <p class="meta">
+                <i class="bx bx-calendar"></i> <?php echo date('Y-m-d', strtotime($blog['addtime']));?>
+                <i class="bx bx-folder ml-3"></i> <?php echo $blog['category'];?>
+              </p>
+            </div>
+          <?php } ?>
+          <div class="text-center mt-4">
+            <a href="blogs.php" class="btn-read-more">查看更多文章</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- End Latest News Section -->
+
+<!-- ======= Our Portfolio Section ======= --><section id="portfolio" class="portfolio section-bg">
 <div class="container">
   <div class="section-title">
     <h2>Portfolio</h2>

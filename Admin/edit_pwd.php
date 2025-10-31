@@ -40,16 +40,9 @@ include('../Common/Core_brain.php');
               <label for="confirm-password">管理员ＱＱ</label>
               <input type="text" name="adminQq" value="<?=$adminData['adminQq']?>" placeholder="请输入管理员ＱＱ" class="form-control text-primary font-size-sm" autocomplete="off">
             </div>
-            <?php if(conf('Vaptcha_Open') == 1) {?>
-            <div id="vaptchaContainer" class="form-group">
-              <div class="vaptcha-init-main">
-                <div class="vaptcha-init-loading">
-                  <a href="/" target="_blank">
-                  <img src="https://r.vaptcha.com/public/img/vaptcha-loading.gif"/>
-                  </a>
-                  <span class="vaptcha-text">人机验证启动中...</span>
-                </div>
-              </div>
+            <?php if(conf('Turnstile_Open') == 1) {?>
+            <div class="form-group">
+              <div class="cf-turnstile" data-sitekey="<?php echo conf('Turnstile_SiteKey');?>"></div>
             </div>
             <?php }?>
             <button type="submit" id="submit" class="btn btn-primary">修改密码</button>
@@ -63,31 +56,13 @@ include('../Common/Core_brain.php');
 <script type="text/javascript" src="../assets/admin/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="../assets/admin/js/main.min.js"></script>
 <script src="../assets/layer/layer.js"></script>
-<?php if(conf('Vaptcha_Open') == 1) {?>
-<script src='https://v.vaptcha.com/v3.js'></script>
-<script>
-var obj;
-vaptcha({
-  vid: '<?php echo conf('Vaptcha_Vid')?>', 
-  type: 'click', 
-  scene: 0, 
-  container: '#vaptchaContainer', 
-  offline_server: '#', 
-  lang: 'zh-CN',
-  https: true,
-  color: '#5c8af7'
-}).then(function (vaptchaObj) {
-  obj = vaptchaObj;
-  vaptchaObj.render();
-  vaptchaObj.listen('close', function () {
-  })
-})
-</script>
+<?php if(conf('Turnstile_Open') == 1) {?>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <?php }?>
 <script>
 var vaptcha_open = 0;
 $(document).ready(function(){
-  if($("#vaptchaContainer").length>0) vaptcha_open=1;
+  if($(".cf-turnstile").length>0) vaptcha_open=1;
   $("#submit").click(function(){
     var adminUser = $("input[name='adminUser']").val();
     var adminPwd = $("input[name='adminPwd']").val();
@@ -100,7 +75,10 @@ $(document).ready(function(){
         return false;
     }
     if(vaptcha_open==1){
-      var token = obj.getToken();
+      var token = $("input[name='cf-turnstile-response']").val();
+      if(typeof token === 'undefined' || token == ""){
+        layer.msg('请先完成人机验证！'); return false;
+      }
       var adddata = {token:token};
     }
     edit.attr('disabled', 'true');

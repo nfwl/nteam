@@ -42,18 +42,9 @@
         <form>
           <input type="email" name="email1"><input type="submit" id="submit1" value="订阅">
         </form>
-        <?php if(conf('Vaptcha_Open') == 1) {?>
+        <?php if(conf('Turnstile_Open') == 1) {?>
         <br>
-        <div id="vaptchaContainer">
-            <div class="vaptcha-init-main">
-                <div class="vaptcha-init-loading">
-                    <a href="/" target="_blank">
-                    <img src="https://r.vaptcha.com/public/img/vaptcha-loading.gif"/>
-                    </a>
-                    <span class="vaptcha-text">人机验证启动中...</span>
-                </div>
-            </div>
-        </div>
+        <div class="cf-turnstile" data-sitekey="<?php echo conf('Turnstile_SiteKey');?>"></div>
       <?php }?>
       </div>
     </div>
@@ -87,39 +78,21 @@
 <script src="assets/js/fang.js"></script>
 <?php }?>
 <?php echo conf_index('Index_Style');?>
-<?php if(conf('Vaptcha_Open') == 1) {?>
-<script src='https://v.vaptcha.com/v3.js'></script>
-<script>
-var obj;
-vaptcha({
-  vid: '<?php echo conf('Vaptcha_Vid')?>', 
-  type: 'click', 
-  scene: 0, 
-  container: '#vaptchaContainer', 
-  offline_server: '#', 
-  lang: 'zh-CN',
-  https: true,
-  color: '#5c8af7'
-}).then(function (vaptchaObj) {
-  obj = vaptchaObj;
-  vaptchaObj.render();
-  vaptchaObj.listen('close', function () {
-  })
-})
-</script>
+<?php if(conf('Turnstile_Open') == 1) {?>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <?php }?>
 <script>
 var vaptcha_open = 0;
 $(document).ready(function(){
-  if($("#vaptchaContainer").length>0) vaptcha_open=1;
+  if($(".cf-turnstile").length>0) vaptcha_open=1;
   $("#submit1").click(function(){
     var email1=$("input[name='email1']").val();
     var data = {email:email1};
     var dy = $("button[type='submit']");
     if(email1==''){layer.msg('邮箱不能为空哦！');return false;}
     if(vaptcha_open==1){
-      var token = obj.getToken();
-      if(token == ""){
+      var token = $("input[name='cf-turnstile-response']").val();
+      if(typeof token === 'undefined' || token == ""){
         layer.msg('请先完成人机验证！'); return false;
       }
       var adddata = {token:token};
@@ -137,7 +110,7 @@ $(document).ready(function(){
         }else{
           dy.removeAttr('disabled');
           layer.alert(data.msg, {icon: 2});
-          obj.reset();
+          if(typeof turnstile !== 'undefined') try{turnstile.reset();}catch(e){}
         }
       },
     });
@@ -165,7 +138,40 @@ $(document).ready(function(){
       area: ['312px', '428px'],
       content: '/indexs.php?my=Join'
     });
-  })
+  });
+
+  // 用戶系統相關功能
+  function logout() {
+    $.ajax({
+        type: 'POST',
+        url: 'user/ajax.php?act=logout',
+        dataType: 'json',
+        success: function(data) {
+            if(data.code == 1) {
+                layer.msg('登出成功', {icon: 1});
+                setTimeout(function() {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                layer.msg(data.msg, {icon: 2});
+            }
+        },
+        error: function(xhr, status, error) {
+            layer.msg('伺服器錯誤：' + error, {icon: 2});
+            console.error('Ajax error:', status, error);
+        }
+    });
+  }
+
+  // 高亮當前選單
+  var path = window.location.pathname;
+  $(".nav-menu ul li").each(function() {
+      var href = $(this).find('a').attr('href');
+      if(href && path.substring(path.lastIndexOf('/') + 1) == href) {
+          $(this).addClass('active');
+          $(this).siblings().removeClass('active');
+      }
+  });
 });
 </script>
 </body>

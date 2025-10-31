@@ -1,8 +1,8 @@
 <?php
 $mod = 'admin';
 include('../Common/Core_brain.php');
-if (conf('Vaptcha_Vid') == '' || conf('Vaptcha_Open') != 1) {
-exit('您还未配置人机验证信息或未打开人机验证开关，请前往设置后再来访问！');
+if (conf('Turnstile_SiteKey') == '' || conf('Turnstile_Secret') == '' || conf('Turnstile_Open') != 1) {
+exit('您还未配置Cloudflare Turnstile验证信息或未打开验证开关，请前往设置后再来访问！');
 }
 ?>
 <!DOCTYPE html>
@@ -38,15 +38,8 @@ exit('您还未配置人机验证信息或未打开人机验证开关，请前�
               <label for="confirm-password">反馈人QQ</label>
               <input type="text" name="qq" value="<?=$adminData['adminQq']?>" placeholder="请输入反馈人QQ" class="form-control text-primary font-size-sm" autocomplete="off">
             </div>
-            <div id="vaptchaContainer" class="form-group">
-            <div class="vaptcha-init-main">
-            <div class="vaptcha-init-loading">
-            <a href="/" target="_blank">
-            <img src="https://r.vaptcha.com/public/img/vaptcha-loading.gif"/>
-            </a>
-            <span class="vaptcha-text">人机验证启动中...</span>
-            </div>
-            </div>
+            <div class="form-group">
+              <div class="cf-turnstile" data-sitekey="<?php echo conf('Turnstile_SiteKey');?>"></div>
             </div>
             <button type="submit" id="submit" class="btn btn-primary">提交反馈</button>
           </form>
@@ -59,27 +52,9 @@ exit('您还未配置人机验证信息或未打开人机验证开关，请前�
 <script type="text/javascript" src="../assets/admin/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="../assets/admin/js/main.min.js"></script>
 <script src="../assets/layer/layer.js"></script>
-<script src='https://v.vaptcha.com/v3.js'></script>
-<script>
-var obj;
-vaptcha({
-  vid: '<?php echo conf('Vaptcha_Vid')?>', 
-  type: 'click', 
-  scene: 0, 
-  container: '#vaptchaContainer', 
-  offline_server: '#', 
-  lang: 'zh-CN',
-  https: true,
-  color: '#5c8af7'
-}).then(function (vaptchaObj) {
-  obj = vaptchaObj;
-  vaptchaObj.render();
-  vaptchaObj.listen('close', function () {
-  })
-})
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 $(document).ready(function(){
   $("#submit").click(function(){
-    var token = obj.getToken();
     var sub = $("input[name='sub']").val();
     var msg = $("input[name='msg']").val();
     var qq = $("input[name='qq']").val();
@@ -88,6 +63,13 @@ $(document).ready(function(){
         layer.alert('请保证每项都不为空，请补充完整！',{icon:2,shade:0.8});
         return false;
     }
+    
+    var token = turnstile.getResponse();
+    if (!token) {
+        layer.alert('請先完成驗證！',{icon:2,shade:0.8});
+        return false;
+    }
+
     fk.attr('disabled', 'true');
     layer.msg('正在提交中，请稍后...');
     $.ajax({
@@ -99,10 +81,11 @@ $(document).ready(function(){
         if(data.code == 1){
             fk.removeAttr('disabled');
             layer.alert(data.msg,{icon:1,shade:0.8});
+            turnstile.reset();
         }else{
             fk.removeAttr('disabled');
             layer.alert(data.msg,{icon:2,shade:0.8});
-            obj.reset();
+            turnstile.reset();
         }
       },
     });
